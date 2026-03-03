@@ -1,3 +1,13 @@
+<script>
+	import { values } from '$lib/data/constants.js';
+
+	const valueIcons = {
+		shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+		heart: '<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>',
+		globe: '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>'
+	};
+</script>
+
 <svelte:head>
 	<title>About | Duniaty by Dunia</title>
 </svelte:head>
@@ -26,21 +36,13 @@
 		</div>
 
 		<div class="values-grid">
-			<div class="value-card">
-				<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-				<h3>100% Organic</h3>
-				<p>Every ingredient is sourced from certified organic farms across Lebanon.</p>
-			</div>
-			<div class="value-card">
-				<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-				<h3>Made with Love</h3>
-				<p>Small-batch production ensures quality and attention to every detail.</p>
-			</div>
-			<div class="value-card">
-				<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-				<h3>From Lebanon</h3>
-				<p>Directly sourced from the finest regions — Bekaa, Shouf, Akkar, and beyond.</p>
-			</div>
+			{#each values as val}
+				<div class="value-card">
+					<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5">{@html valueIcons[val.icon]}</svg>
+					<h3>{val.title}</h3>
+					<p>{val.description}</p>
+				</div>
+			{/each}
 		</div>
 	</div>
 </section>

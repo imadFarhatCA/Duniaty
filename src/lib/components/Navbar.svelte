@@ -1,15 +1,10 @@
 <script>
 	import { page } from '$app/stores';
 	import { cart } from '$lib/stores/cart.svelte.js';
+	import { navLinks } from '$lib/data/constants.js';
 
 	let { onCartClick } = $props();
 	let mobileOpen = $state(false);
-
-	const links = [
-		{ label: 'Home', href: '/' },
-		{ label: 'Products', href: '/products' },
-		{ label: 'About', href: '/about' }
-	];
 </script>
 
 <nav class="navbar">
@@ -19,7 +14,7 @@
 		</a>
 
 		<div class="nav-links" class:open={mobileOpen}>
-			{#each links as link}
+			{#each navLinks as link}
 				<a
 					href={link.href}
 					class="nav-link"
@@ -63,7 +58,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		height: 72px;
+		height: 84px;
+		padding: 0 32px;
 	}
 	.nav-logo img {
 		height: 64px;

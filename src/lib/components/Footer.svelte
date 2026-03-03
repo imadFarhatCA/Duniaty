@@ -1,10 +1,6 @@
 <script>
+	import { navLinks } from '$lib/data/constants.js';
 	const year = new Date().getFullYear();
-	const quickLinks = [
-		{ label: 'Home', href: '/' },
-		{ label: 'Products', href: '/products' },
-		{ label: 'About', href: '/about' }
-	];
 </script>
 
 <footer class="footer">
@@ -17,7 +13,7 @@
 		<div class="footer-col">
 			<h4>Quick Links</h4>
 			<ul>
-				{#each quickLinks as link}
+				{#each navLinks as link}
 					<li><a href={link.href}>{link.label}</a></li>
 				{/each}
 			</ul>
@@ -68,7 +64,7 @@
 		padding-bottom: 40px;
 	}
 	.footer-logo {
-		height: 32px;
+		height: 48px;
 		width: auto;
 		filter: brightness(0) invert(1);
 		margin-bottom: 16px;

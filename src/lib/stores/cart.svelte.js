@@ -1,3 +1,5 @@
+import { getDiscountedPrice } from '$lib/data/constants.js';
+
 let items = $state([]);
 
 export const cart = {
@@ -13,7 +15,7 @@ export const cart = {
 			items = [...items, {
 				id: product.id,
 				name: product.name,
-				price: product.offer ? +(product.price * (1 - product.offer.discount / 100)).toFixed(2) : product.price,
+				price: getDiscountedPrice(product.price, product.offer) || product.price,
 				image: product.image,
 				qty: 1
 			}];

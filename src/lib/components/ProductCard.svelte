@@ -1,12 +1,10 @@
 <script>
 	import StarRating from './StarRating.svelte';
+	import PriceDisplay from './PriceDisplay.svelte';
+	import StockBadge from './StockBadge.svelte';
 	import { cart } from '$lib/stores/cart.svelte.js';
 
 	let { product } = $props();
-
-	const discountedPrice = product.offer
-		? +(product.price * (1 - product.offer.discount / 100)).toFixed(2)
-		: null;
 </script>
 
 <div class="card">
@@ -31,26 +29,8 @@
 		</div>
 
 		<div class="card-bottom">
-			<div class="price-row">
-				{#if discountedPrice}
-					<span class="price-old">${product.price.toFixed(2)}</span>
-					<span class="price">${discountedPrice.toFixed(2)}</span>
-				{:else}
-					<span class="price">${product.price.toFixed(2)}</span>
-				{/if}
-			</div>
-
-			<div class="stock-row">
-				{#if product.inStock}
-					<span class="badge badge-success">
-						<span class="dot green"></span> In Stock
-					</span>
-				{:else}
-					<span class="badge badge-error">
-						<span class="dot red"></span> Out of Stock
-					</span>
-				{/if}
-			</div>
+			<PriceDisplay price={product.price} offer={product.offer} />
+			<StockBadge inStock={product.inStock} />
 
 			<button
 				class="btn btn-primary add-btn"
@@ -171,32 +151,6 @@
 		flex-direction: column;
 		gap: 10px;
 	}
-	.price-row {
-		display: flex;
-		align-items: baseline;
-		gap: 8px;
-	}
-	.price {
-		font-size: 1.2rem;
-		font-weight: 700;
-		color: var(--color-navy);
-	}
-	.price-old {
-		font-size: 0.9rem;
-		color: var(--color-text-muted);
-		text-decoration: line-through;
-	}
-	.stock-row {
-		display: flex;
-	}
-	.dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 50%;
-		display: inline-block;
-	}
-	.dot.green { background: var(--color-success); }
-	.dot.red { background: var(--color-error); }
 	.add-btn {
 		width: 100%;
 		font-size: 0.85rem;

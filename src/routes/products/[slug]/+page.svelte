@@ -1,6 +1,10 @@
 <script>
 	import StarRating from '$lib/components/StarRating.svelte';
 	import ProductCard from '$lib/components/ProductCard.svelte';
+	import PriceDisplay from '$lib/components/PriceDisplay.svelte';
+	import StockBadge from '$lib/components/StockBadge.svelte';
+	import QtySelector from '$lib/components/QtySelector.svelte';
+	import { getDiscountedPrice } from '$lib/data/constants.js';
 	import { cart } from '$lib/stores/cart.svelte.js';
 	import { products } from '$lib/data/products.js';
 
@@ -8,11 +12,7 @@
 	let product = $derived(data.product);
 	let qty = $state(1);
 
-	let discountedPrice = $derived(
-		product.offer
-			? +(product.price * (1 - product.offer.discount / 100)).toFixed(2)
-			: null
-	);
+	let discountedPrice = $derived(getDiscountedPrice(product.price, product.offer));
 
 	let related = $derived(
 		products
@@ -53,14 +53,7 @@
 				<h1>{product.name}</h1>
 				<StarRating rating={product.rating} />
 
-				<div class="price-block">
-					{#if discountedPrice}
-						<span class="price-old">${product.price.toFixed(2)}</span>
-						<span class="price-current">${discountedPrice.toFixed(2)}</span>
-					{:else}
-						<span class="price-current">${product.price.toFixed(2)}</span>
-					{/if}
-				</div>
+				<PriceDisplay price={product.price} offer={product.offer} size="lg" />
 
 				<p class="description">{product.description}</p>
 
@@ -84,27 +77,10 @@
 					</div>
 				</div>
 
-				<div class="badges-row">
-					{#if product.inStock}
-						<span class="badge badge-success">
-							<span class="dot green"></span> In Stock
-						</span>
-					{:else}
-						<span class="badge badge-error">
-							<span class="dot red"></span> Out of Stock
-						</span>
-					{/if}
-					{#if product.bio}
-						<span class="badge badge-bio">BIO Certified</span>
-					{/if}
-				</div>
+				<StockBadge inStock={product.inStock} bio={product.bio} />
 
 				<div class="add-row">
-					<div class="qty-selector">
-						<button onclick={() => qty = Math.max(1, qty - 1)}>−</button>
-						<span>{qty}</span>
-						<button onclick={() => qty++}>+</button>
-					</div>
+					<QtySelector bind:value={qty} />
 					<button class="btn btn-primary add-btn" disabled={!product.inStock} onclick={addToCart}>
 						{#if product.inStock}
 							Add to Cart — ${((discountedPrice || product.price) * qty).toFixed(2)}
@@ -185,21 +161,6 @@
 		font-weight: 700;
 		line-height: 1.2;
 	}
-	.price-block {
-		display: flex;
-		align-items: baseline;
-		gap: 10px;
-	}
-	.price-current {
-		font-size: 1.5rem;
-		font-weight: 700;
-		color: var(--color-navy);
-	}
-	.price-old {
-		font-size: 1rem;
-		color: var(--color-text-muted);
-		text-decoration: line-through;
-	}
 	.description {
 		font-size: 1rem;
 		line-height: 1.7;
@@ -240,50 +201,10 @@
 		border-radius: 999px;
 		color: var(--color-text-light);
 	}
-	.badges-row {
-		display: flex;
-		gap: 8px;
-		flex-wrap: wrap;
-	}
-	.dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 50%;
-		display: inline-block;
-	}
-	.dot.green { background: var(--color-success); }
-	.dot.red { background: var(--color-error); }
-
 	.add-row {
 		display: flex;
 		gap: 12px;
 		margin-top: 8px;
-	}
-	.qty-selector {
-		display: flex;
-		align-items: center;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-sm);
-		overflow: hidden;
-	}
-	.qty-selector button {
-		width: 40px;
-		height: 44px;
-		border: none;
-		background: var(--color-cream);
-		cursor: pointer;
-		font-size: 1rem;
-		color: var(--color-text);
-	}
-	.qty-selector button:hover { background: var(--color-cream-dark); }
-	.qty-selector span {
-		width: 44px;
-		height: 44px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-weight: 600;
-		font-size: 0.95rem;
 	}
 	.add-btn {
 		flex: 1;

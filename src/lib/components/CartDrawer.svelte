@@ -1,5 +1,6 @@
 <script>
 	import { cart } from '$lib/stores/cart.svelte.js';
+	import QtySelector from './QtySelector.svelte';
 
 	let { open = $bindable(false) } = $props();
 </script>
@@ -32,11 +33,7 @@
 					<div class="item-info">
 						<span class="item-name">{item.name}</span>
 						<span class="item-price">${item.price.toFixed(2)}</span>
-						<div class="qty-controls">
-							<button onclick={() => cart.updateQty(item.id, item.qty - 1)}>−</button>
-							<span>{item.qty}</span>
-							<button onclick={() => cart.updateQty(item.id, item.qty + 1)}>+</button>
-						</div>
+						<QtySelector value={item.qty} min={0} size="sm" onchange={(v) => cart.updateQty(item.id, v)} />
 					</div>
 					<button class="remove-btn" onclick={() => cart.remove(item.id)} aria-label="Remove">
 						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -150,37 +147,6 @@
 	.item-price {
 		font-size: 0.85rem;
 		color: var(--color-text-light);
-	}
-	.qty-controls {
-		display: flex;
-		align-items: center;
-		gap: 0;
-		margin-top: 4px;
-	}
-	.qty-controls button {
-		width: 28px;
-		height: 28px;
-		border: 1px solid var(--color-border);
-		background: var(--color-cream);
-		cursor: pointer;
-		font-size: 0.9rem;
-		color: var(--color-text);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-	.qty-controls button:first-child { border-radius: 4px 0 0 4px; }
-	.qty-controls button:last-child { border-radius: 0 4px 4px 0; }
-	.qty-controls span {
-		width: 32px;
-		height: 28px;
-		border-top: 1px solid var(--color-border);
-		border-bottom: 1px solid var(--color-border);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 0.85rem;
-		font-weight: 500;
 	}
 	.remove-btn {
 		background: none;

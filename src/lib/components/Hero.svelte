@@ -1,6 +1,13 @@
 <script>
 	import { getFeaturedProducts } from '$lib/data/products.js';
+	import { trustBadges } from '$lib/data/constants.js';
 	const showcase = getFeaturedProducts().slice(0, 3);
+
+	const badgeIcons = {
+		check: '<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+		shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+		pin: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>'
+	};
 </script>
 
 <section class="hero">
@@ -26,18 +33,12 @@
 
 	<div class="hero-trust">
 		<div class="container trust-row">
-			<span class="trust-item">
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-				BIO Certified
-			</span>
-			<span class="trust-item">
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-				100% Organic
-			</span>
-			<span class="trust-item">
-				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-				From Lebanon
-			</span>
+			{#each trustBadges as badge}
+				<span class="trust-item">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="2">{@html badgeIcons[badge.icon]}</svg>
+					{badge.label}
+				</span>
+			{/each}
 		</div>
 	</div>
 </section>
