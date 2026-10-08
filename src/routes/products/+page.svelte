@@ -1,23 +1,58 @@
 <script>
 	import ProductCard from '$lib/components/ProductCard.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 	import { products, categories, getProductsByCategory } from '$lib/data/products.js';
 
 	let selectedCategory = $state('All');
 	let sortBy = $state('default');
 
+	function sizeToGrams(s) {
+		const m = String(s).match(/([\d.]+)\s*(kg|g|ml)/i);
+		if (!m) return 0;
+		const v = parseFloat(m[1]);
+		return m[2].toLowerCase() === 'kg' ? v * 1000 : v;
+	}
+
+	// One card per size. Within each category: every product's largest size
+	// first (the 1kg row), then the smaller sizes underneath (the 500g row).
 	let filtered = $derived.by(() => {
-		let list = getProductsByCategory(selectedCategory);
-		if (sortBy === 'price-asc') list = [...list].sort((a, b) => a.price - b.price);
-		if (sortBy === 'price-desc') list = [...list].sort((a, b) => b.price - a.price);
-		if (sortBy === 'rating') list = [...list].sort((a, b) => b.rating - a.rating);
-		if (sortBy === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name));
-		return list;
+		const list = getProductsByCategory(selectedCategory);
+		const groups = [];
+		for (const p of list) {
+			let g = groups.find(x => x.cat === p.category);
+			if (!g) { g = { cat: p.category, items: [] }; groups.push(g); }
+			g.items.push(p);
+		}
+		const out = [];
+		for (const g of groups) {
+			const perProduct = g.items.map(p => ({
+				p,
+				sizes: p.sizes
+					? [...p.sizes].sort((a, b) => sizeToGrams(b.size) - sizeToGrams(a.size))
+					: [{ size: p.denomination, price: p.price, image: p.image }]
+			}));
+			const maxLen = Math.max(...perProduct.map(x => x.sizes.length));
+			for (let i = 0; i < maxLen; i++) {
+				for (const { p, sizes } of perProduct) {
+					if (i < sizes.length) {
+						out.push({ product: p, variant: sizes[i], key: `${p.id}-${sizes[i].size}` });
+					}
+				}
+			}
+		}
+		if (sortBy === 'price-asc') out.sort((a, b) => a.variant.price - b.variant.price);
+		if (sortBy === 'price-desc') out.sort((a, b) => b.variant.price - a.variant.price);
+		if (sortBy === 'rating') out.sort((a, b) => b.product.rating - a.product.rating);
+		if (sortBy === 'name') out.sort((a, b) => a.product.name.localeCompare(b.product.name));
+		return out;
 	});
 </script>
 
-<svelte:head>
-	<title>Products | Duniaty by Dunia</title>
-</svelte:head>
+<Seo
+	title="Buy Lebanese Zaatar, Honey & Spices Online | Duniaty"
+	description="Shop all Duniaty products: Lebanese mixed thyme zaatar, Zaa'Nuts and Zaa'Chili mixes, raw oak honey, cooking spice blends, extra virgin olive oil, pomegranate molasses, jams, makdous, spicy olives and keshek. Organic, made in Lebanon, delivered to your door."
+	path="/products"
+/>
 
 <section class="products-page section">
 	<div class="container">
@@ -46,11 +81,11 @@
 			</select>
 		</div>
 
-		<div class="product-count">{filtered.length} product{filtered.length !== 1 ? 's' : ''}</div>
+		<div class="product-count">{filtered.length} item{filtered.length !== 1 ? 's' : ''}</div>
 
 		<div class="grid">
-			{#each filtered as product (product.id)}
-				<ProductCard {product} />
+			{#each filtered as entry (entry.key)}
+				<ProductCard product={entry.product} variant={entry.variant} />
 			{/each}
 		</div>
 	</div>

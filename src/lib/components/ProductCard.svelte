@@ -1,41 +1,47 @@
 <script>
-	import StarRating from './StarRating.svelte';
 	import PriceDisplay from './PriceDisplay.svelte';
 	import StockBadge from './StockBadge.svelte';
 	import { cart } from '$lib/stores/cart.svelte.js';
 
-	let { product } = $props();
+	// `variant` is an optional {size, price, image} entry: the card then represents
+	// that specific size instead of the product's default one.
+	let { product, variant = null } = $props();
+
+	let cardImage = $derived(variant?.image ?? product.image);
+	let cardPrice = $derived(variant ? variant.price : product.price);
+	let cardDenom = $derived(variant ? variant.size : product.denomination);
+	let cardHref = $derived(variant && product.sizes ? `/products/${product.slug}?size=${variant.size}` : `/products/${product.slug}`);
+
+	function addToCart() {
+		const sel = product.sizes?.find(s => s.size === cardDenom) ?? null;
+		cart.add(product, sel);
+	}
 </script>
 
 <div class="card">
-	<a href="/products/{product.slug}" class="card-image">
-		<img src={product.image} alt={product.name} />
+	<a href={cardHref} class="card-image">
+		<img src={cardImage} alt="{product.name} {cardDenom}" />
 		{#if product.offer}
 			<span class="offer-badge">{product.offer.label}</span>
-		{/if}
-		{#if product.bio}
-			<span class="bio-tag">BIO</span>
 		{/if}
 	</a>
 
 	<div class="card-body">
 		<span class="card-category">{product.category}</span>
-		<a href="/products/{product.slug}" class="card-title">{product.name}</a>
-		<StarRating rating={product.rating} />
+		<a href={cardHref} class="card-title">{product.name}</a>
 
 		<div class="card-meta">
-			<span class="denomination">{product.denomination}</span>
-			<span class="origin">{product.origin}</span>
+			<span class="denomination">{cardDenom}</span>
 		</div>
 
 		<div class="card-bottom">
-			<PriceDisplay price={product.price} offer={product.offer} />
+			<PriceDisplay price={cardPrice} offer={product.offer} />
 			<StockBadge inStock={product.inStock} />
 
 			<button
 				class="btn btn-primary add-btn"
 				disabled={!product.inStock}
-				onclick={() => cart.add(product)}
+				onclick={addToCart}
 			>
 				{#if product.inStock}
 					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
@@ -89,18 +95,6 @@
 		border-radius: 999px;
 		letter-spacing: 0.02em;
 	}
-	.bio-tag {
-		position: absolute;
-		top: 12px;
-		right: 12px;
-		background: rgba(74,124,89,0.9);
-		color: white;
-		font-size: 0.65rem;
-		font-weight: 700;
-		padding: 3px 8px;
-		border-radius: 4px;
-		letter-spacing: 0.05em;
-	}
 	.card-body {
 		padding: 16px;
 		display: flex;
@@ -136,12 +130,6 @@
 		background: var(--color-cream-dark);
 		border-radius: 4px;
 		color: var(--color-text-light);
-	}
-	.origin {
-		font-size: 0.75rem;
-		color: var(--color-text-muted);
-		display: flex;
-		align-items: center;
 	}
 	.card-bottom {
 		margin-top: auto;

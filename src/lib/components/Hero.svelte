@@ -1,7 +1,8 @@
 <script>
-	import { getFeaturedProducts } from '$lib/data/products.js';
+	import { getProductBySlug } from '$lib/data/products.js';
 	import { trustBadges } from '$lib/data/constants.js';
-	const showcase = getFeaturedProducts().slice(0, 3);
+	// The three main Duniaty lineups: zaatar, honey, spices
+	const showcase = ['mixed-thyme', 'oak-honey', 'spice-up-your-life'].map(getProductBySlug);
 
 	const badgeIcons = {
 		check: '<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
@@ -19,6 +20,10 @@
 			<div class="hero-actions">
 				<a href="/products" class="btn btn-gold">Explore Products</a>
 				<a href="/about" class="btn btn-outline">Our Story</a>
+				<a href="/duniaty-catalog.pdf" download="Duniaty-Catalog.pdf" class="btn btn-outline btn-catalog">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+					Catalog
+				</a>
 			</div>
 		</div>
 
@@ -51,8 +56,8 @@
 	}
 	.hero-inner {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 48px;
+		grid-template-columns: 0.9fr 1.1fr;
+		gap: 40px;
 		align-items: center;
 		min-height: 480px;
 	}
@@ -86,15 +91,22 @@
 		gap: 12px;
 		flex-wrap: wrap;
 	}
+	.btn-catalog {
+		display: inline-flex;
+		align-items: center;
+		gap: 7px;
+	}
 	.hero-images {
 		display: flex;
-		gap: 16px;
+		gap: 14px;
 		justify-content: center;
 		align-items: flex-end;
 		padding-bottom: 40px;
 	}
 	.hero-img-wrap {
-		width: 160px;
+		flex: 1 1 0;
+		min-width: 150px;
+		max-width: 310px;
 		border-radius: var(--radius-lg);
 		overflow: hidden;
 		box-shadow: 0 12px 32px rgba(0,0,0,0.08);
@@ -151,7 +163,7 @@
 		.hero-text p { margin: 0 auto 24px; }
 		.hero-actions { justify-content: center; }
 		.hero-images { gap: 12px; padding-bottom: 24px; }
-		.hero-img-wrap { width: 120px; }
+		.hero-img-wrap { min-width: 104px; max-width: 150px; }
 		.trust-row { gap: 20px; }
 	}
 </style>

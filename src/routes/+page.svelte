@@ -2,7 +2,14 @@
 	import Hero from '$lib/components/Hero.svelte';
 	import FeaturedProducts from '$lib/components/FeaturedProducts.svelte';
 	import SpecialOffers from '$lib/components/SpecialOffers.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 </script>
+
+<Seo
+	title="Duniaty by Dunia | Lebanese Zaatar, Oak Honey & Spices"
+	description="Buy authentic Lebanese zaatar (za'atar thyme mix), raw oak honey, mixed spices, olive oil, makdous, keshek and jams online. 100% organic, made in Lebanon — $4 delivery everywhere in Lebanon, pay by Whish or cash on delivery."
+	path="/"
+/>
 
 <Hero />
 <FeaturedProducts />
@@ -17,7 +24,7 @@
 			<a href="/about" class="btn btn-outline">Learn More</a>
 		</div>
 		<div class="story-visual">
-			<img src="/products/makdous.jpg" alt="Traditional Lebanese Makdous" />
+			<img src="/gallery/wild-thyme.jpg" alt="Wild thyme growing in the Lebanese mountains" />
 		</div>
 	</div>
 </section>
@@ -35,15 +42,12 @@
 		color: var(--color-text-light);
 		margin-bottom: 24px;
 	}
-	.story-visual {
-		border-radius: var(--radius-lg);
-		overflow: hidden;
-		box-shadow: 0 12px 32px rgba(0,0,0,0.08);
-	}
 	.story-visual img {
 		width: 100%;
 		aspect-ratio: 4/3;
 		object-fit: cover;
+		border-radius: var(--radius-lg);
+		box-shadow: 0 12px 32px rgba(0,0,0,0.08);
 	}
 
 	@media (max-width: 768px) {

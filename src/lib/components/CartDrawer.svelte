@@ -27,15 +27,16 @@
 				<a href="/products" class="btn btn-outline" onclick={() => open = false}>Browse Products</a>
 			</div>
 		{:else}
-			{#each cart.items as item (item.id)}
+			{#each cart.items as item (item.key)}
 				<div class="cart-item">
 					<img src={item.image} alt={item.name} class="item-img" />
 					<div class="item-info">
 						<span class="item-name">{item.name}</span>
+						<span class="item-size">{item.size}</span>
 						<span class="item-price">${item.price.toFixed(2)}</span>
-						<QtySelector value={item.qty} min={0} size="sm" onchange={(v) => cart.updateQty(item.id, v)} />
+						<QtySelector value={item.qty} min={0} size="sm" onchange={(v) => cart.updateQty(item.key, v)} />
 					</div>
-					<button class="remove-btn" onclick={() => cart.remove(item.id)} aria-label="Remove">
+					<button class="remove-btn" onclick={() => cart.remove(item.key)} aria-label="Remove">
 						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 					</button>
 				</div>
@@ -49,7 +50,7 @@
 				<span>Subtotal</span>
 				<strong>${cart.total.toFixed(2)}</strong>
 			</div>
-			<button class="btn btn-gold checkout-btn">Checkout</button>
+			<a href="/checkout" class="btn btn-gold checkout-btn" onclick={() => open = false}>Checkout</a>
 			<button class="clear-link" onclick={() => cart.clear()}>Clear Cart</button>
 		</div>
 	{/if}
@@ -144,6 +145,11 @@
 		font-weight: 500;
 		color: var(--color-navy);
 	}
+	.item-size {
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--color-gold);
+	}
 	.item-price {
 		font-size: 0.85rem;
 		color: var(--color-text-light);
@@ -174,7 +180,7 @@
 		font-size: 1.15rem;
 		color: var(--color-navy);
 	}
-	.checkout-btn { width: 100%; }
+	.checkout-btn { width: 100%; display: block; text-align: center; }
 	.clear-link {
 		background: none;
 		border: none;

@@ -1,3 +1,5 @@
 # allow crawling everything by default
 User-agent: *
-Disallow:
+Disallow: /checkout
+
+Sitemap: https://duniatylb.com/sitemap.xml

@@ -5,22 +5,24 @@
 	const offers = getProductsWithOffers();
 </script>
 
-<section class="offers-section">
-	<div class="container">
-		<div class="section-header">
-			<div>
-				<h2 class="section-title">Special Offers</h2>
-				<p class="section-subtitle">Limited-time deals on our most loved products.</p>
+{#if offers.length > 0}
+	<section class="offers-section">
+		<div class="container">
+			<div class="section-header">
+				<div>
+					<h2 class="section-title">Special Offers</h2>
+					<p class="section-subtitle">Limited-time deals on our most loved products.</p>
+				</div>
+			</div>
+
+			<div class="grid">
+				{#each offers as product (product.id)}
+					<ProductCard {product} />
+				{/each}
 			</div>
 		</div>
-
-		<div class="grid">
-			{#each offers as product (product.id)}
-				<ProductCard {product} />
-			{/each}
-		</div>
-	</div>
-</section>
+	</section>
+{/if}
 
 <style>
 	.offers-section {
