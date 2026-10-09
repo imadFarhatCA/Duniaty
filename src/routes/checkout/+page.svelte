@@ -8,12 +8,33 @@
 		email: '',
 		city: '',
 		address: '',
+		mapsLink: '',
 		notes: ''
 	});
 	let payment = $state('whish');
 	let submitting = $state(false);
+	let locating = $state(false);
 	let errorMsg = $state('');
 	let placedOrder = $state(null); // set after a successful order
+
+	function shareLocation() {
+		if (!navigator.geolocation) {
+			errorMsg = 'Your browser cannot share location — please paste a Google Maps link instead.';
+			return;
+		}
+		locating = true;
+		navigator.geolocation.getCurrentPosition(
+			(pos) => {
+				form.mapsLink = `https://www.google.com/maps?q=${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
+				locating = false;
+			},
+			() => {
+				locating = false;
+				errorMsg = 'Could not read your location. You can paste a Google Maps link instead (open Google Maps, press and hold your location, tap Share).';
+			},
+			{ enableHighAccuracy: true, timeout: 12000 }
+		);
+	}
 
 	let subtotal = $derived(cart.total);
 	let total = $derived(subtotal + (cart.items.length > 0 ? DELIVERY_FEE : 0));
@@ -31,9 +52,27 @@
 		errorMsg = '';
 
 		const orderNo = 'DN-' + Date.now().toString().slice(-8);
+		const payInstructions =
+			payment === 'whish'
+				? `Please open the Whish Money app, choose Send Money, enter ${WHISH_NUMBER}, and send $${total.toFixed(2)} with "${orderNo}" in the note. Your order ships as soon as the transfer arrives.`
+				: `Cash on Delivery — please prepare $${total.toFixed(2)} in cash for when your order arrives.`;
 		const payload = {
 			_subject: `New Duniaty order ${orderNo} — $${total.toFixed(2)} (${payment === 'whish' ? 'Whish' : 'Cash on Delivery'})`,
 			_template: 'box',
+			_replyto: form.email,
+			_autoresponse:
+				`Thank you for your order from Duniaty! 🌿\n\n` +
+				`ORDER ${orderNo}\n` +
+				`----------------------------------------\n` +
+				`${orderLines()}\n` +
+				`----------------------------------------\n` +
+				`Subtotal: $${subtotal.toFixed(2)}\n` +
+				`Delivery (all over Lebanon): $${DELIVERY_FEE.toFixed(2)}\n` +
+				`TOTAL: $${total.toFixed(2)}\n\n` +
+				`PAYMENT\n${payInstructions}\n\n` +
+				`DELIVERY\nWe will call you on ${form.phone} to confirm delivery to: ${form.city} — ${form.address}\n\n` +
+				`Duniaty by Dunia — Artisanal Lebanese Delicacies\n` +
+				`duniatylb.com | WhatsApp +961 76 851 555 | Instagram @duniaty.lb`,
 			'Order number': orderNo,
 			'Payment method': payment === 'whish' ? `Whish Money transfer to ${WHISH_NUMBER}` : 'Cash on Delivery',
 			'Items': orderLines(),
@@ -42,9 +81,10 @@
 			'Total': `$${total.toFixed(2)}`,
 			'Customer name': form.name,
 			'Customer phone': form.phone,
-			'Customer email': form.email || '—',
+			'Customer email': form.email,
 			'City / Area': form.city,
 			'Full address': form.address,
+			'Google Maps location': form.mapsLink || '— (not shared)',
 			'Notes': form.notes || '—'
 		};
 
@@ -60,8 +100,10 @@
 			}
 			placedOrder = {
 				number: orderNo,
+				subtotal,
 				total,
 				payment,
+				email: form.email,
 				items: cart.items.map(i => ({ ...i }))
 			};
 			cart.clear();
@@ -85,14 +127,32 @@
 			<div class="success">
 				<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
 				<h1>Thank you! Your order is placed.</h1>
-				<p class="order-no">Order number: <strong>{placedOrder.number}</strong></p>
+				<p class="order-no">Order number: <strong>{placedOrder.number}</strong> — a confirmation email was sent to <strong>{placedOrder.email}</strong></p>
+
+				<div class="invoice">
+					{#each placedOrder.items as item (item.key)}
+						<div class="invoice-row">
+							<span>{item.qty} × {item.name} <em>({item.size})</em></span>
+							<span>${(item.price * item.qty).toFixed(2)}</span>
+						</div>
+					{/each}
+					<div class="invoice-row muted"><span>Subtotal</span><span>${placedOrder.subtotal.toFixed(2)}</span></div>
+					<div class="invoice-row muted"><span>Delivery</span><span>${DELIVERY_FEE.toFixed(2)}</span></div>
+					<div class="invoice-row grand"><span>Total</span><span>${placedOrder.total.toFixed(2)}</span></div>
+				</div>
 
 				{#if placedOrder.payment === 'whish'}
 					<div class="whish-box">
 						<h2>Complete your payment with Whish</h2>
-						<p>Send <strong>${placedOrder.total.toFixed(2)}</strong> via the Whish Money app to:</p>
+						<ol class="whish-steps">
+							<li>Open the <a href="https://www.whish.money/" target="_blank" rel="noopener">Whish Money</a> app</li>
+							<li>Choose <strong>Send Money</strong> and enter this number:</li>
+						</ol>
 						<div class="whish-number">{WHISH_NUMBER}</div>
-						<p class="hint">Please write <strong>{placedOrder.number}</strong> in the transfer note. Your order ships as soon as the payment is received.</p>
+						<ol class="whish-steps" start="3">
+							<li>Send <strong>${placedOrder.total.toFixed(2)}</strong> and write <strong>{placedOrder.number}</strong> in the note</li>
+						</ol>
+						<p class="hint">Your order ships as soon as the payment is received.</p>
 					</div>
 				{:else}
 					<div class="whish-box">
@@ -126,8 +186,8 @@
 						<input type="tel" required bind:value={form.phone} placeholder="e.g. 70 123 456" />
 					</label>
 					<label>
-						Email (optional)
-						<input type="email" bind:value={form.email} placeholder="you@example.com" />
+						Email * <span class="label-hint">(your order confirmation is sent here)</span>
+						<input type="email" required bind:value={form.email} placeholder="you@example.com" />
 					</label>
 					<label>
 						City / Area *
@@ -136,6 +196,18 @@
 					<label>
 						Full address *
 						<textarea required rows="3" bind:value={form.address} placeholder="Street, building, floor, nearest landmark..."></textarea>
+					</label>
+					<label>
+						Location on Google Maps <span class="label-hint">(so the driver finds you exactly)</span>
+						<div class="location-row">
+							<input type="url" bind:value={form.mapsLink} placeholder="Paste a Google Maps link, or use the button" />
+							<button type="button" class="btn btn-outline locate-btn" onclick={shareLocation} disabled={locating}>
+								{locating ? 'Locating…' : '📍 Use my location'}
+							</button>
+						</div>
+						{#if form.mapsLink}
+							<span class="location-ok">✓ Location attached — <a href={form.mapsLink} target="_blank" rel="noopener">preview on the map</a></span>
+						{/if}
 					</label>
 					<label>
 						Notes (optional)
@@ -270,6 +342,65 @@
 		padding: 10px 14px;
 		border-radius: var(--radius-sm);
 	}
+	.label-hint {
+		font-weight: 400;
+		color: var(--color-text-muted);
+		font-size: 0.78rem;
+	}
+	.location-row {
+		display: flex;
+		gap: 8px;
+	}
+	.location-row input { flex: 1; }
+	.locate-btn {
+		white-space: nowrap;
+		font-size: 0.82rem;
+		padding: 10px 14px;
+	}
+	.location-ok {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: var(--color-success);
+	}
+	.location-ok a { color: var(--color-success); text-decoration: underline; }
+
+	.invoice {
+		width: 100%;
+		background: var(--color-warm-white);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		padding: 18px 22px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		text-align: left;
+	}
+	.invoice-row {
+		display: flex;
+		justify-content: space-between;
+		gap: 12px;
+		font-size: 0.92rem;
+	}
+	.invoice-row em { color: var(--color-gold); font-style: normal; font-weight: 600; font-size: 0.8rem; }
+	.invoice-row.muted { color: var(--color-text-light); font-size: 0.85rem; }
+	.invoice-row.grand {
+		border-top: 2px solid var(--color-border);
+		padding-top: 8px;
+		font-weight: 700;
+		color: var(--color-navy);
+		font-size: 1rem;
+	}
+	.whish-steps {
+		text-align: left;
+		margin: 0 0 4px 18px;
+		padding: 0;
+		font-size: 0.9rem;
+		color: rgba(255,255,255,0.85);
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	.whish-steps a { color: var(--color-gold); text-decoration: underline; }
 	.place-btn {
 		margin-top: 10px;
 		padding: 14px;
