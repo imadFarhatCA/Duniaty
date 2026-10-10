@@ -1,6 +1,6 @@
 <script>
 	import { cart } from '$lib/stores/cart.svelte.js';
-	import { DELIVERY_FEE, WHISH_NUMBER, ORDER_EMAIL } from '$lib/data/constants.js';
+	import { DELIVERY_FEE, WHISH_NUMBER, ORDER_EMAIL, WHATSAPP_NUMBER } from '$lib/data/constants.js';
 
 	let form = $state({
 		name: '',
@@ -98,13 +98,23 @@
 			if (!res.ok || data.success === 'false' || data.success === false) {
 				throw new Error(data.message || 'Could not send the order.');
 			}
+			const waText =
+				`New order ${orderNo} 🛒\n` +
+				`${orderLines()}\n` +
+				`Subtotal $${subtotal.toFixed(2)} + Delivery $${DELIVERY_FEE.toFixed(2)} = TOTAL $${total.toFixed(2)}\n` +
+				`Payment: ${payment === 'whish' ? `Whish transfer to ${WHISH_NUMBER}` : 'Cash on Delivery'}\n` +
+				`Name: ${form.name}\n` +
+				`Phone: ${form.phone}\n` +
+				`Address: ${form.city} — ${form.address}` +
+				(form.mapsLink ? `\nLocation: ${form.mapsLink}` : '');
 			placedOrder = {
 				number: orderNo,
 				subtotal,
 				total,
 				payment,
 				email: form.email,
-				items: cart.items.map(i => ({ ...i }))
+				items: cart.items.map(i => ({ ...i })),
+				waUrl: `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waText)}`
 			};
 			cart.clear();
 			window.scrollTo(0, 0);
@@ -161,8 +171,11 @@
 					</div>
 				{/if}
 
-				<p class="hint">We received your delivery details and will contact you on your phone number to confirm.</p>
-				<a href="/products" class="btn btn-gold">Continue Shopping</a>
+				<a href={placedOrder.waUrl} target="_blank" rel="noopener" class="btn btn-gold wa-btn">
+					📲 Send your order on WhatsApp
+				</a>
+				<p class="hint">One tap — your order details reach us on WhatsApp so we can confirm immediately.</p>
+				<a href="/products" class="btn btn-outline">Continue Shopping</a>
 			</div>
 		{:else if cart.items.length === 0}
 			<div class="success">
@@ -401,6 +414,12 @@
 		gap: 4px;
 	}
 	.whish-steps a { color: var(--color-gold); text-decoration: underline; }
+	.wa-btn {
+		width: 100%;
+		padding: 15px;
+		font-size: 1.02rem;
+		text-align: center;
+	}
 	.place-btn {
 		margin-top: 10px;
 		padding: 14px;

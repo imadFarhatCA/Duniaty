@@ -35,8 +35,9 @@ export function getDiscountedPrice(price, offer) {
 
 // Checkout
 export const DELIVERY_FEE = 4; // flat, everywhere in Lebanon
-export const WHISH_NUMBER = '70 089 087';
+export const WHISH_NUMBER = '76 851 555';
 export const ORDER_EMAIL = 'egalakiki@gmail.com';
+export const WHATSAPP_NUMBER = '96176851555'; // orders + customer contact
 
 // SEO
 export const SITE_URL = 'https://duniatylb.com';
