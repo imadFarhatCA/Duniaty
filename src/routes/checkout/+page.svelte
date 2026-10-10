@@ -1,6 +1,6 @@
 <script>
 	import { cart } from '$lib/stores/cart.svelte.js';
-	import { DELIVERY_FEE, WHISH_NUMBER, ORDER_EMAIL, WHATSAPP_NUMBER } from '$lib/data/constants.js';
+	import { DELIVERY_FEE, WHISH_NUMBER, ORDER_EMAIL, WHATSAPP_NUMBER, WHISH_PAYMENT_LINK, CALLMEBOT_APIKEY } from '$lib/data/constants.js';
 
 	let form = $state({
 		name: '',
@@ -16,6 +16,41 @@
 	let locating = $state(false);
 	let errorMsg = $state('');
 	let placedOrder = $state(null); // set after a successful order
+	let copied = $state(''); // which value was just copied
+
+	async function copy(value, which) {
+		let ok = false;
+		try {
+			await navigator.clipboard.writeText(value);
+			ok = true;
+		} catch {
+			// fallback for older browsers / stricter contexts
+			try {
+				const ta = document.createElement('textarea');
+				ta.value = value;
+				ta.style.position = 'fixed';
+				ta.style.opacity = '0';
+				document.body.appendChild(ta);
+				ta.select();
+				ok = document.execCommand('copy');
+				document.body.removeChild(ta);
+			} catch {}
+		}
+		if (ok) {
+			copied = which;
+			setTimeout(() => { if (copied === which) copied = ''; }, 2500);
+		}
+	}
+
+	function notifyOwner(orderNo, totalAmount, name, phone) {
+		// Automatic WhatsApp alert to the owner's phone via CallMeBot (when configured).
+		// Fire-and-forget: never blocks or fails the order.
+		if (!CALLMEBOT_APIKEY) return;
+		try {
+			const text = `Duniaty: new order ${orderNo} — $${totalAmount.toFixed(2)} from ${name} (${phone}). Details in your email.`;
+			fetch(`https://api.callmebot.com/whatsapp.php?phone=+${WHATSAPP_NUMBER}&apikey=${CALLMEBOT_APIKEY}&text=${encodeURIComponent(text)}`, { mode: 'no-cors' });
+		} catch {}
+	}
 
 	function shareLocation() {
 		if (!navigator.geolocation) {
@@ -116,6 +151,7 @@
 				items: cart.items.map(i => ({ ...i })),
 				waUrl: `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(waText)}`
 			};
+			notifyOwner(orderNo, total, form.name, form.phone);
 			cart.clear();
 			window.scrollTo(0, 0);
 		} catch (err) {
@@ -154,11 +190,26 @@
 				{#if placedOrder.payment === 'whish'}
 					<div class="whish-box">
 						<h2>Complete your payment with Whish</h2>
+						{#if WHISH_PAYMENT_LINK}
+							<a href={WHISH_PAYMENT_LINK} target="_blank" rel="noopener" class="btn btn-gold whish-pay-btn">
+								Pay ${placedOrder.total.toFixed(2)} with Whish
+							</a>
+							<p class="hint">You'll pay securely inside Whish. Write <strong>{placedOrder.number}</strong> in the note.</p>
+							<p class="hint whish-or">— or transfer manually —</p>
+						{/if}
 						<ol class="whish-steps">
-							<li>Open the <a href="https://www.whish.money/" target="_blank" rel="noopener">Whish Money</a> app</li>
-							<li>Choose <strong>Send Money</strong> and enter this number:</li>
+							<li>Open the <a href="https://www.whish.money/" target="_blank" rel="noopener">Whish Money</a> app &rarr; <strong>Send Money</strong></li>
+							<li>Send to this number:</li>
 						</ol>
 						<div class="whish-number">{WHISH_NUMBER}</div>
+						<div class="copy-row">
+							<button class="copy-btn" onclick={() => copy(WHISH_NUMBER.replace(/\s/g, ''), 'number')}>
+								{copied === 'number' ? '✓ Copied' : 'Copy number'}
+							</button>
+							<button class="copy-btn" onclick={() => copy(placedOrder.total.toFixed(2), 'amount')}>
+								{copied === 'amount' ? '✓ Copied' : `Copy amount ($${placedOrder.total.toFixed(2)})`}
+							</button>
+						</div>
 						<ol class="whish-steps" start="3">
 							<li>Send <strong>${placedOrder.total.toFixed(2)}</strong> and write <strong>{placedOrder.number}</strong> in the note</li>
 						</ol>
@@ -420,6 +471,37 @@
 		font-size: 1.02rem;
 		text-align: center;
 	}
+	.whish-pay-btn {
+		display: block;
+		width: 100%;
+		padding: 14px;
+		font-size: 1rem;
+		text-align: center;
+		margin-bottom: 10px;
+	}
+	.whish-or {
+		text-align: center;
+		margin: 10px 0;
+		letter-spacing: 0.05em;
+	}
+	.copy-row {
+		display: flex;
+		gap: 10px;
+		justify-content: center;
+		margin: 4px 0 12px;
+		flex-wrap: wrap;
+	}
+	.copy-btn {
+		background: rgba(255,255,255,0.1);
+		border: 1px solid rgba(255,255,255,0.3);
+		color: #fff;
+		padding: 8px 16px;
+		border-radius: 999px;
+		font-size: 0.82rem;
+		cursor: pointer;
+		transition: all var(--ease);
+	}
+	.copy-btn:hover { background: rgba(255,255,255,0.2); }
 	.place-btn {
 		margin-top: 10px;
 		padding: 14px;

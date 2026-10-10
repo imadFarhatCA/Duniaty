@@ -39,6 +39,14 @@ export const WHISH_NUMBER = '76 851 555';
 export const ORDER_EMAIL = 'egalakiki@gmail.com';
 export const WHATSAPP_NUMBER = '96176851555'; // orders + customer contact
 
+// Optional integrations — fill these in to activate:
+// A payment link created in the owner's Whish app (Share > copy link).
+// When set, the checkout shows a one-tap "Pay with Whish" button.
+export const WHISH_PAYMENT_LINK = '';
+// CallMeBot personal API key for automatic WhatsApp "new order" alerts
+// to the owner's phone (one-time free setup at callmebot.com).
+export const CALLMEBOT_APIKEY = '';
+
 // SEO
 export const SITE_URL = 'https://duniatylb.com';
 export const SITE_NAME = 'Duniaty by Dunia';
